@@ -2,8 +2,39 @@
 #include <windows.h>
 #include "SDK/Engine_classes.hpp"
 #include "SDK/M1_classes.hpp"
+void virtual_hook(void* addr, void* pDes, int index, void** ret)
+{
 
-DWORD WINAPI MainThread(LPVOID lpParam)
+    auto vtable = *(uintptr_t**)addr;
+
+    int methods = 0;
+    do
+    {
+        ++methods;
+    } while (*(uintptr_t*)((uintptr_t)vtable + (methods * 0x8)));
+
+    auto vtable_buf = new uint64_t[methods * 0x8];
+    for (auto count = 0; count < methods; ++count)
+    {
+        vtable_buf[count] = *(uintptr_t*)((uintptr_t)vtable + (count * 0x8));
+
+        *ret = (void*)vtable[index];
+
+        vtable_buf[index] = (uintptr_t)(pDes);
+        *(uint64_t**)addr = vtable_buf;
+    }
+}
+typedef void(__thiscall* PostRenderOriginal_t)(SDK::UGameViewportClient*, SDK::UCanvas*);
+PostRenderOriginal_t PostRenderOriginal;
+void PostRenderHook(SDK::UGameViewportClient* viewport, SDK::UCanvas* canvas)
+{
+    printf("PostRenderHook\n");
+    canvas->K2_DrawLine(SDK::FVector2D{ 0,0 }, SDK::FVector2D{500,500},5,SDK::FLinearColor{ 0.30f, 0.30f, 0.80f, 1.0f });
+
+    PostRenderOriginal(viewport, canvas);
+}
+
+DWORD MainThread(LPVOID lpReserved)
 {
     AllocConsole();
     FILE* f;
@@ -19,77 +50,15 @@ DWORD WINAPI MainThread(LPVOID lpParam)
         return 0;
     }
 
-    SDK::UWorld* world = SDK::UWorld::GetWorld();
-    if (!world)
-    {
-        printf("Failed to get world\n");
-        return 0;
-    }
 
-    auto base_local_player = world->OwningGameInstance->LocalPlayers[0];
-    if (!base_local_player)
-    {
-        printf("Failed to get base local player\n");
-        return 0;
-    }
+    auto vtable = (void*)engine->GameViewport;
 
-    auto local_player = static_cast<SDK::UM1LocalPlayer*>(base_local_player);
-    if (!local_player)
-    {
-        printf("Failed to cast to local player\n");
-        return 0;
-    }
+    virtual_hook(vtable, PostRenderHook, 111, (void**)&PostRenderOriginal);
 
-    auto player_controller = static_cast<SDK::AM1PlayerController*>(local_player->PlayerController);
-    if (!player_controller)
-    {
-        printf("Failed to get player controller\n");
-        return 0;
-    }
 
-    auto player = static_cast<SDK::AM1Character*>(player_controller->Character);
-    if (!player)
-    {
-        printf("Failed to get player character\n");
-        return 0;
-    }
 
     while (GetAsyncKeyState(VK_F1) == 0)
     {
-        player->Jump();
-        auto display_name = player->GetDisplayName();
-        if (display_name)
-        {
-            auto display_name_str = display_name.ToString();
-            printf("Player name: %s\n", display_name_str.c_str());
-        }
-
-        auto actor_manager = player_controller->ActorManager_Subsystem;
-        if (actor_manager)
-        {
-            for (auto actor : actor_manager->Characters)
-            {
-                auto actor_name = actor->GetDisplayName();
-                if (actor_name)
-                {
-                    auto actor_name_str = actor_name.ToString();
-                    printf("Actor name: %s\n", actor_name_str.c_str());
-                }
-            }
-			for (auto actor : actor_manager->Monsters)
-			{
-				auto actor_name = actor.Second->GetDisplayName();
-				if (actor_name)
-				{
-					auto actor_name_str = actor_name.ToString();
-					printf("Actor name: %s\n", actor_name_str.c_str());
-				}
-			}
-        }
-        else
-        {
-            printf("Failed to get actor manager\n");
-        }
 		Sleep(1000);
     }
 
@@ -98,19 +67,18 @@ DWORD WINAPI MainThread(LPVOID lpParam)
     return 0;
 }
 
-BOOL APIENTRY DllMain(HMODULE hModule,
-                      DWORD  ul_reason_for_call,
-                      LPVOID lpReserved)
+BOOL APIENTRY DllMain(IN HMODULE hMod, IN DWORD dwReason, IN LPVOID lpReserved)
 {
-    switch (ul_reason_for_call)
+    switch (dwReason)
     {
     case DLL_PROCESS_ATTACH:
-    case DLL_THREAD_ATTACH:
-        CreateThread(0, 0, MainThread, 0, 0, 0);
+        DisableThreadLibraryCalls(hMod);
+        CreateThread(nullptr, 0, MainThread, hMod, 0, nullptr);
         break;
-    case DLL_THREAD_DETACH:
+
     case DLL_PROCESS_DETACH:
         break;
     }
+
     return TRUE;
 }
