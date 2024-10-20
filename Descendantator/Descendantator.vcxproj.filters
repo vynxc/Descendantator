@@ -34,4 +34,12 @@
       <Filter>Source Files\SDK</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ZeroGui.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ZeroInput.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>
