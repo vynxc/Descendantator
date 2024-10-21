@@ -143,9 +143,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="DllMain.cpp" />
+    <ClCompile Include="EntityManager.cpp" />
+    <ClCompile Include="EntityManager.hpp" />
     <ClCompile Include="GlobalContext.cpp" />
     <ClCompile Include="Helpers.cpp" />
-    <ClCompile Include="Player.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="SDK\Basic.cpp" />
     <ClCompile Include="SDK\CoreUObject_functions.cpp" />
@@ -155,7 +156,7 @@
   <ItemGroup>
     <ClInclude Include="GlobalContext.hpp" />
     <ClInclude Include="Helpers.hpp" />
-    <ClInclude Include="Player.hpp" />
+    <ClInclude Include="Entity.hpp" />
     <ClInclude Include="Renderer.hpp" />
     <ClInclude Include="ZeroGui.hpp" />
     <ClInclude Include="ZeroInput.hpp" />

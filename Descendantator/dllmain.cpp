@@ -2,7 +2,6 @@
 #include <windows.h>
 #include "GlobalContext.hpp"
 #include "Helpers.hpp"
-#include "Player.hpp"
 #include "Renderer.hpp"
 
 
@@ -20,6 +19,7 @@ DWORD MainThread(LPVOID lpReserved)
 	Renderer::Init();
 	while (GetAsyncKeyState(VK_F1) == 0)
 	{
+
 		Sleep(1000);
 	}
 

@@ -5,6 +5,7 @@
 
 #include <cstdlib>
 #include <cwchar>
+#include "SDK/Engine_classes.hpp"
 using namespace SDK;
 
 wchar_t* s2wc(const char* c)
@@ -126,7 +127,7 @@ namespace ZeroGUI
 		}
 	}
 
-	UCanvas* canvas;
+	SDK::UCanvas* canvas;
 
 
 	bool hover_element = false;
