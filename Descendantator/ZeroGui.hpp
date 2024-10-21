@@ -1,7 +1,7 @@
 ﻿#define _CRT_SECURE_NO_WARNINGS
 #pragma once
 #include "SDK/CoreUObject_structs.hpp"
-#include "ZeroInput.h"
+#include "ZeroInput.hpp"
 
 #include <cstdlib>
 #include <cwchar>
@@ -302,6 +302,17 @@ void TextCenter(const char* name, FVector2D pos, FLinearColor color, bool outlin
 		for (float i = 0.0f; i < h; i += 1.0f)
 			canvas->K2_DrawLine(FVector2D{ initial_pos.X, initial_pos.Y + i }, FVector2D{ initial_pos.X + w, initial_pos.Y + i }, 1.0f, color);
 	}
+	void DrawRect(FVector2D min, FVector2D max, FLinearColor color, float thickness = 1.0f)
+	{
+		canvas->K2_DrawLine(FVector2D{ min.X, min.Y }, FVector2D{ max.X, min.Y }, thickness, color);
+
+		canvas->K2_DrawLine(FVector2D{ min.X, min.Y }, FVector2D{ min.X, max.Y }, thickness, color);
+
+		canvas->K2_DrawLine(FVector2D{ max.X, min.Y }, FVector2D{ max.X, max.Y }, thickness, color);
+
+		canvas->K2_DrawLine(FVector2D{ min.X, max.Y }, FVector2D{ max.X, max.Y }, thickness, color);
+	}
+
 	void DrawFilledCircle(FVector2D pos, float r, FLinearColor color)
 	{
 		float smooth = 0.07f;
@@ -319,7 +330,7 @@ void TextCenter(const char* name, FVector2D pos, FLinearColor color, bool outlin
 	}
 	void DrawCircle(FVector2D pos, int radius, int numSides, FLinearColor Color)
 	{
-		float PI = 3.1415927f;
+		const float PI = 3.14159265359;
 
 		float Step = PI * 2.0 / numSides;
 		int Count = 0;
